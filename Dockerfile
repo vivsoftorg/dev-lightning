@@ -16,7 +16,7 @@ EXPOSE 5173
 # ===========================
 # Production Image
 # ===========================
-FROM base AS bolt-ai-production
+FROM base AS production
 
 # Define build-time arguments
 ARG VITE_LOG_LEVEL=debug
@@ -48,7 +48,7 @@ CMD ["pnpm", "run", "dockerstart"]
 # ===========================
 # Development Image
 # ===========================
-FROM base AS bolt-ai-development
+FROM base AS development
 
 ARG VITE_LOG_LEVEL=debug
 ARG DEFAULT_NUM_CTX

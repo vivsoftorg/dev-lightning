@@ -1,11 +1,11 @@
 services:
   app-prod:
-    image: bolt-ai:production
+    image: dev-lightning:production
     container_name: bolt-diy
     build:
       context: .
       dockerfile: Dockerfile
-      target: bolt-ai-production
+      target: dev-lightning-production
     ports:
       - '5173:5173'
     env_file:
@@ -39,10 +39,10 @@ services:
       - production
 
   app-dev:
-    image: bolt-ai:development
+    image: dev-lightning:development
     container_name: bolt-diy
     build:
-      target: bolt-ai-development
+      target: dev-lightning-development
     env_file:
       - '.env'
     environment:
