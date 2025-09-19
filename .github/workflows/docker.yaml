@@ -61,7 +61,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
+          build-args: |
+            RUNNING_IN_DOCKER=true
+            VITE_BASE_PATH=/bolt
+            DEFAULT_NUM_CTX=32768
+            VITE_SERVER_ALLOWED_HOSTS="enbuild-dev.vivplatform.io,enbuild.vivplatform.io,lightning.vivplatform.io"
 
       - name: Check manifest
         run: docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}

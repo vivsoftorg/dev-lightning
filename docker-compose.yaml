@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: dev-lightning-production
+      target: production
     ports:
       - '5173:5173'
     env_file:
@@ -42,7 +42,7 @@ services:
     image: dev-lightning:development
     container_name: bolt-diy
     build:
-      target: dev-lightning-development
+      target: development
     env_file:
       - '.env'
     environment:
@@ -92,10 +92,10 @@ services:
       - app-dev
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    profiles: ['development', 'default', 'production', 'prebuilt']
+    profiles: ['development']
 
   app-prebuild:
-    image: ghcr.io/stackblitz-labs/bolt.diy:latest
+    image: ghcr.io/vivsoftorg/dev-lightning:main
     container_name: bolt-diy
     ports:
       - '5173:5173'
