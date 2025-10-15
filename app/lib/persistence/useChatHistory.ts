@@ -133,18 +133,18 @@ export function useChatHistory() {
                   content: `Bolt Restored your chat from a snapshot. You can revert this message to load the full chat history.
                   <boltArtifact id="restored-project-setup" title="Restored Project & Setup" type="bundled">
                   ${Object.entries(snapshot?.files || {})
-                    .map(([key, value]) => {
-                      if (value?.type === 'file') {
-                        return `
+                      .map(([key, value]) => {
+                        if (value?.type === 'file') {
+                          return `
                       <boltAction type="file" filePath="${key}">
 ${value.content}
                       </boltAction>
                       `;
-                      } else {
-                        return ``;
-                      }
-                    })
-                    .join('\n')}
+                        } else {
+                          return ``;
+                        }
+                      })
+                      .join('\n')}
                   ${commandActionsString}
                   </boltArtifact>
                   `, // Added commandActionsString, followupMessage, updated id and title
@@ -152,12 +152,12 @@ ${value.content}
                     'no-store',
                     ...(summary
                       ? [
-                          {
-                            chatId: storedMessages.messages[snapshotIndex].id,
-                            type: 'chatSummary',
-                            summary,
-                          } satisfies ContextAnnotation,
-                        ]
+                        {
+                          chatId: storedMessages.messages[snapshotIndex].id,
+                          type: 'chatSummary',
+                          summary,
+                        } satisfies ContextAnnotation,
+                      ]
                       : []),
                   ],
                 },
@@ -367,11 +367,9 @@ ${value.content}
 
       try {
         const newId = await createChatFromMessages(db, description, messages, metadata);
-        const basePath =
-          import.meta.env.VITE_BASE_PATH && import.meta.env.VITE_BASE_PATH !== '/'
-            ? import.meta.env.VITE_BASE_PATH.replace(/\/$/, '')
-            : '';
-        window.location.href = `${basePath}/chat/${newId}`;
+        const envBasePath = import.meta.env.VITE_BASE_PATH;
+        const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
+        window.location.href = `${window.location.origin}${basePath}/chat/${newId}`;
         toast.success('Chat imported successfully');
       } catch (error) {
         if (error instanceof Error) {

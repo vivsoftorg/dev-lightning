@@ -117,12 +117,12 @@ async function handleProxyRequest(request: Request, path: string | undefined) {
     // Add body for non-GET/HEAD requests
     if (!['GET', 'HEAD'].includes(request.method)) {
       fetchOptions.body = request.body;
-      fetchOptions.duplex = 'half';
-
-      /*
-       * Note: duplex property is removed to ensure TypeScript compatibility
-       * across different environments and versions
-       */
+      // Add duplex: 'half' only if running in Node.js and fetchOptions.body is set
+      // Node.js 18+ requires duplex for streaming requests with a body
+      // @ts-ignore
+      if (typeof process !== 'undefined' && process.release && process.release.name === 'node') {
+        fetchOptions.duplex = 'half';
+      }
     }
 
     // Forward the request to the target URL

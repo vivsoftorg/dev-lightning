@@ -108,7 +108,7 @@ ${escapeBoltTags(file.content)}
         setLoading(false);
         const envBasePath = import.meta.env.VITE_BASE_PATH;
         const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
-        window.location.href = `${basePath}`;
+        window.location.href = `${window.location.origin}${envBasePath}`;
 
         return;
       }
@@ -125,7 +125,7 @@ ${escapeBoltTags(file.content)}
     if (!url) {
       const envBasePath = import.meta.env.VITE_BASE_PATH;
       const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
-      window.location.href = `${basePath}`;
+      window.location.href = `${window.location.origin}${envBasePath}`;
       return;
     }
 
@@ -135,7 +135,7 @@ ${escapeBoltTags(file.content)}
       setLoading(false);
       const envBasePath = import.meta.env.VITE_BASE_PATH;
       const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
-      window.location.href = `${basePath}`;
+      window.location.href = `${window.location.origin}${envBasePath}`;
     });
     setImported(true);
   }, [searchParams, historyReady, gitReady, imported]);
