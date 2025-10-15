@@ -77,13 +77,13 @@ export function GitUrlImport() {
             content: `Cloning the repo ${repoUrl} into ${workdir}
 <boltArtifact id="imported-files" title="Git Cloned Files"  type="bundled">
 ${fileContents
-  .map(
-    (file) =>
-      `<boltAction type="file" filePath="${file.path}">
+                .map(
+                  (file) =>
+                    `<boltAction type="file" filePath="${file.path}">
 ${escapeBoltTags(file.content)}
 </boltAction>`,
-  )
-  .join('\n')}
+                )
+                .join('\n')}
 </boltArtifact>`,
             id: generateId(),
             createdAt: new Date(),
@@ -106,7 +106,9 @@ ${escapeBoltTags(file.content)}
         console.error('Error during import:', error);
         toast.error('Failed to import repository');
         setLoading(false);
-        window.location.href = '/';
+        const envBasePath = import.meta.env.VITE_BASE_PATH;
+        const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
+        window.location.href = `${basePath}`;
 
         return;
       }
@@ -121,7 +123,9 @@ ${escapeBoltTags(file.content)}
     const url = searchParams.get('url');
 
     if (!url) {
-      window.location.href = '/';
+      const envBasePath = import.meta.env.VITE_BASE_PATH;
+      const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
+      window.location.href = `${basePath}`;
       return;
     }
 
@@ -129,7 +133,9 @@ ${escapeBoltTags(file.content)}
       console.error('Error importing repo:', error);
       toast.error('Failed to import repository');
       setLoading(false);
-      window.location.href = '/';
+      const envBasePath = import.meta.env.VITE_BASE_PATH;
+      const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
+      window.location.href = `${basePath}`;
     });
     setImported(true);
   }, [searchParams, historyReady, gitReady, imported]);
