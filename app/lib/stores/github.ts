@@ -7,10 +7,10 @@ const storedConnection = typeof window !== 'undefined' ? localStorage.getItem('g
 const initialConnection: GitHubConnection = storedConnection
   ? JSON.parse(storedConnection)
   : {
-      user: null,
-      token: '',
-      tokenType: 'classic',
-    };
+    user: null,
+    token: '',
+    tokenType: 'classic',
+  };
 
 export const githubConnection = atom<GitHubConnection>(initialConnection);
 export const isConnecting = atom<boolean>(false);
@@ -28,7 +28,9 @@ export async function initializeGitHubConnection() {
   try {
     isConnecting.set(true);
 
-    const response = await fetch('/api/github-user');
+    const envBasePath = import.meta.env.VITE_BASE_PATH;
+    const basePath = envBasePath && envBasePath !== '/' ? envBasePath.replace(/\/$/, '') : '';
+    const response = await fetch(`${basePath}/api/github-user`);
 
     if (!response.ok) {
       if (response.status === 401) {
