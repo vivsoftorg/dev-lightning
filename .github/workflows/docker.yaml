@@ -2,7 +2,7 @@ name: Docker Publish
 
 on:
   push:
-    branches: [main, stable]
+    branches: [main, dev]
     tags: ['v*', '*.*.*']
   workflow_dispatch:
 
@@ -66,6 +66,29 @@ jobs:
             VITE_BASE_PATH=/bolt
             DEFAULT_NUM_CTX=32768
             VITE_SERVER_ALLOWED_HOSTS="enbuild-dev.vivplatform.io,enbuild.vivplatform.io,lightning.vivplatform.io"
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.33.1
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
+          format: table
+          exit-code: 1
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0.22.1
+        with:
+          image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
+          output-file: sbom.cyclonedx.json
+          format: cyclonedx-json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
 
       - name: Check manifest
         run: docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
