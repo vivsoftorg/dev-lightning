@@ -68,7 +68,7 @@ jobs:
             VITE_SERVER_ALLOWED_HOSTS="enbuild-dev.vivplatform.io,enbuild.vivplatform.io,lightning.vivplatform.io"
 
       - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
           format: table
@@ -78,7 +78,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Generate SBOM with Syft
-        uses: anchore/sbom-action@v0.22.1
+        uses: anchore/sbom-action@v0
         with:
           image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
           output-file: sbom.cyclonedx.json
