@@ -72,37 +72,38 @@ jobs:
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
           scanners: 'vuln'
-          format: 'cyclonedx'
+          format: 'json'
           vuln-type: 'os,library'
           severity: 'CRITICAL'
           ignore-unfixed: true
           list-all-pkgs: false
-          output: trivy-scan-report-cyclonedx.json
+          output: trivy-scan-report.json
           exit-code: 0
+
+      - name: Convert Trivy JSON to table
+        run: |
+          trivy convert --format table trivy-scan-report.json
+
+      - name: Upload Trivy scan JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-report-json
+          path: trivy-scan-report.json
+          retention-days: 30
+
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
+          output-file: sbom.cyclonedx.json
+          format: cyclonedx-json
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-scan-report-cyclonedx
-          path: trivy-scan-report-cyclonedx.json
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
           retention-days: 30
-
-      - name: Convert Trivy JSON to table
-        run: |
-          trivy convert --format table trivy-scan-report-cyclonedx.json
-
-      # - name: Generate SBOM with Syft
-      #   uses: anchore/sbom-action@v0
-      #   with:
-      #     image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
-      #     output-file: sbom.cyclonedx.json
-      #     format: cyclonedx-json
-
-      # - name: Upload SBOM artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: sbom-cyclonedx
-      #     path: sbom.cyclonedx.json
 
       - name: Check manifest
         run: docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
