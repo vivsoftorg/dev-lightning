@@ -71,12 +71,13 @@ jobs:
         uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.version }}
-          version: 'v0.69.0'
-          format: "table"
-          exit-code: 0
+          scanners: 'vuln'
+          format: 'table'
           vuln-type: 'os,library'
-          ignore-unfixed: true
           severity: 'CRITICAL'
+          ignore-unfixed: false
+          exit-code: 0
+
 
       - name: Generate SBOM with Syft
         uses: anchore/sbom-action@v0
