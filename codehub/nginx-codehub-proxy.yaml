@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+  namespace: default
+data:
+  nginx.conf: |
+    events {}
+
+    http {
+      # Required for WebSockets
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+      }
+
+      server {
+        listen 80;
+
+        location = / {
+          return 302 /codehub/;
+        }
+
+        location /codehub/ {
+          # Strip /codehub before sending to JupyterHub (which runs at /)
+          rewrite ^/codehub/(.*)$ /$1 break;
+
+          proxy_pass http://proxy-public.codehub.svc.cluster.local;
+
+          proxy_http_version 1.1;
+
+          # --- WebSockets (CRITICAL) ---
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_set_header Sec-WebSocket-Protocol $http_sec_websocket_protocol;
+
+          # --- REQUIRED: disable buffering for WS ---
+          proxy_buffering off;
+          proxy_request_buffering off;
+
+          # --- Forwarded headers (CHP relies on these) ---
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+          # --- Timeouts ---
+          proxy_read_timeout 3600;
+          proxy_send_timeout 3600;
+
+          # --- Cookies ---
+          proxy_cookie_path / /codehub/;
+
+          # --- Redirect fixes ---
+          proxy_redirect /hub/  /codehub/hub/;
+          proxy_redirect /user/ /codehub/user/;
+
+          # --- Rewrite absolute paths in HTML ---
+          sub_filter 'href="/hub/'    'href="/codehub/hub/';
+          sub_filter 'src="/hub/'     'src="/codehub/hub/';
+          sub_filter 'action="/hub/'  'action="/codehub/hub/';
+          sub_filter 'href="/user/'   'href="/codehub/user/';
+          sub_filter 'src="/user/'    'src="/codehub/user/';
+          sub_filter 'href="/static/' 'href="/codehub/static/';
+          sub_filter 'src="/static/'  'src="/codehub/static/';
+          sub_filter_once off;
+
+          absolute_redirect off;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: config
+          configMap:
+            name: nginx-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
