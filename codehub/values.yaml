@@ -1,5 +1,15 @@
 singleuser:
-  # Use the code-server image
+  lifecycleHooks:
+    postStart:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - |
+            cd //home/coder/projects
+            if [ ! -d demo ]; then
+              git clone https://github.com/vivsoftorg/iris-flower-classifier-demo-notebook.git demo
+            fi
   image:
     name: "ghcr.io/vivsoftorg/codehub"
     tag: "0.0.1"
@@ -72,8 +82,8 @@ hub:
 
     code_settings.py: |
       # The working dir is by default set to
-      # /home/coder in the VSCode image
-      c.VSCodeKubeSpawner.working_dir = "/home/coder"
+      # /home/coder/projects in the our VSCode image
+      c.VSCodeKubeSpawner.working_dir = "/home/coder/projects"
 
       # By default, the cmd includes the call to "jupyterhub-singleserver"
       # However, the docker image already comes with the correct
