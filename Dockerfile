@@ -1,4 +1,4 @@
-ARG BASE=node:24.1.0
+ARG BASE=node:25-bookworm-slim
 FROM ${BASE} AS base
 
 WORKDIR /app
@@ -9,10 +9,8 @@ RUN npm install -g pnpm && pnpm install
 
 # Copy the rest of the application code
 COPY . .
-
-# Expose the port
-EXPOSE 5173
-
+#------------------------------------------------------------------------------
+# Development Stage
 
 FROM base AS development
 
@@ -32,3 +30,28 @@ ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
 RUN mkdir -p ${WORKDIR}/run
 
 CMD ["pnpm", "run", "dev", "--host"]
+
+EXPOSE 5173
+#------------------------------------------------------------------------------
+# Production Stage
+FROM development AS production
+
+ARG VITE_LOG_LEVEL=debug
+ARG DEFAULT_NUM_CTX
+ARG VITE_PUBLIC_APP_URL
+ARG VITE_SERVER_ALLOWED_HOSTS
+ARG VITE_BASE_PATH
+
+ENV VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
+    RUNNING_IN_DOCKER=true \
+    VITE_SERVER_ALLOWED_HOSTS=${VITE_SERVER_ALLOWED_HOSTS} \
+    VITE_PUBLIC_APP_URL=${VITE_PUBLIC_APP_URL}\
+    VITE_BASE_PATH=${VITE_BASE_PATH}
+
+RUN mkdir -p ${WORKDIR}/run
+
+CMD ["pnpm", "run", "dev", "--host"]
+
+EXPOSE 5173
+#------------------------------------------------------------------------------
